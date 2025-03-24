@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(PacienteNaoEncontradoException.class)
-    public ResponseEntity<ErrorResponse> tratarErroClienteNaoEncontradoException(PacienteNaoEncontradoException ex) {
+    public ResponseEntity<ErrorResponse> tratarErroPacienteNaoEncontradoException(PacienteNaoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.valueOf(ex.getHttpStatus())).body(new ErrorResponse(ex.getMessage()));
     }
 

@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("api/v1/clientes")
+@RequestMapping("api/v1/pacientes")
 @RequiredArgsConstructor
 public class PacienteController {
 
