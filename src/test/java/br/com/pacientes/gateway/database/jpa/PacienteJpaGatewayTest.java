@@ -1,10 +1,11 @@
-package br.com.clientes.cadastro.gateway.database.jpa;
+package br.com.pacientes.gateway.database.jpa;
 
-import br.com.clientes.cadastro.domain.Cliente;
-import br.com.clientes.cadastro.exception.ClienteNaoEncontradoException;
-import br.com.clientes.cadastro.exception.ErroAcessarRepositorioException;
-import br.com.clientes.cadastro.gateway.database.jpa.entity.ClienteEntity;
-import br.com.clientes.cadastro.gateway.database.jpa.repository.ClienteRepository;
+import br.com.pacientes.cadastro.domain.Paciente;
+import br.com.pacientes.cadastro.exception.PacienteNaoEncontradoException;
+import br.com.pacientes.cadastro.exception.ErroAcessarRepositorioException;
+import br.com.pacientes.cadastro.gateway.database.jpa.PacienteJpaGateway;
+import br.com.pacientes.cadastro.gateway.database.jpa.entity.PacienteEntity;
+import br.com.pacientes.cadastro.gateway.database.jpa.repository.PacienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -18,257 +19,238 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class ClienteJpaGatewayTest {
+class PacienteJpaGatewayTest {
     @InjectMocks
-    private ClienteJpaGateway clienteJpaGateway;
+    private PacienteJpaGateway pacienteJpaGateway;
 
     @Mock
-    private ClienteRepository clienteRepository;
+    private PacienteRepository pacienteRepository;
+
+    private PacienteEntity pacienteEntityJoao;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+
+        pacienteEntityJoao = new PacienteEntity(
+                "12345678901",
+                "João da Silva",
+                "30",
+                "M",
+                "Rio de Janeiro",
+                "Rua ABC",
+                "20000000",
+                "joao@email.com",
+                "21 99999999"
+        );
     }
 
     @Test
-    void deveCadastrarCliente() {
-        Cliente cliente = new Cliente(
-                "19276445854",
-                "Anderson Rodrigues",
+    void deveCadastrarPaciente() {
+        Paciente paciente = new Paciente(
+                "12345678901",
+                "Jão da Silva",
+                "47",
+                "M",
+                "São Paulo",
                 "Rua Aura",
-                "09981400"
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
         );
 
-        // Crie o clienteEntity esperado com base no cliente
-        ClienteEntity clienteEntityEsperado = new ClienteEntity(
-                "19276445854",
-                "Anderson Rodrigues",
+        PacienteEntity pacienteEntityEsperado = new PacienteEntity(
+                "12345678901",
+                "Jão da Silva",
+                "47",
+                "M",
+                "São Paulo",
                 "Rua Aura",
-                "09981400"
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
         );
 
-        // Chame o método de cadastro do cliente
-        clienteJpaGateway.cadastrarCliente(cliente);
+        pacienteJpaGateway.cadastrarPaciente(paciente);
 
-        // Use o ArgumentCaptor para capturar o argumento passado para o save()
-        ArgumentCaptor<ClienteEntity> captor = ArgumentCaptor.forClass(ClienteEntity.class);
-        verify(clienteRepository, times(1)).save(captor.capture());
+        ArgumentCaptor<PacienteEntity> captor = ArgumentCaptor.forClass(PacienteEntity.class);
+        verify(pacienteRepository, times(1)).save(captor.capture());
 
-        // Obtenha o cliente capturado
-        ClienteEntity clienteEntityCapturado = captor.getValue();
+        PacienteEntity pacienteEntityCapturado = captor.getValue();
 
-        // Verifique se o cliente capturado tem os mesmos valores que o esperado
-        assertEquals(clienteEntityEsperado.getCpf(), clienteEntityCapturado.getCpf());
-        assertEquals(clienteEntityEsperado.getNome(), clienteEntityCapturado.getNome());
-        assertEquals(clienteEntityEsperado.getEndereco(), clienteEntityCapturado.getEndereco());
-        assertEquals(clienteEntityEsperado.getCep(), clienteEntityCapturado.getCep());
+        assertEquals(pacienteEntityEsperado.getCpf(), pacienteEntityCapturado.getCpf());
+        assertEquals(pacienteEntityEsperado.getNome(), pacienteEntityCapturado.getNome());
+        assertEquals(pacienteEntityEsperado.getIdade(), pacienteEntityCapturado.getIdade());
+        assertEquals(pacienteEntityEsperado.getSexo(), pacienteEntityCapturado.getSexo());
+        assertEquals(pacienteEntityEsperado.getCidade(), pacienteEntityCapturado.getCidade());
+        assertEquals(pacienteEntityEsperado.getEndereco(), pacienteEntityCapturado.getEndereco());
+        assertEquals(pacienteEntityEsperado.getCep(), pacienteEntityCapturado.getCep());
+        assertEquals(pacienteEntityEsperado.getEmail(), pacienteEntityCapturado.getEmail());
+        assertEquals(pacienteEntityEsperado.getTelefone(), pacienteEntityCapturado.getTelefone());
     }
 
-//    @Test
-//    void deveCadastrarCliente() {
-//        Cliente cliente = new Cliente(
-//                "19276445854",
-//                "Anderson Rodrigues",
-//                "Rua Aura",
-//                "09981-400"
-//        );
-//
-//        ClienteEntity clienteEntity = new ClienteEntity(
-//                "19276445854",
-//                "Anderson Rodrigues",
-//                "Rua Aura",
-//                "09981-400"
-//        );
-//
-//        clienteJpaGateway.cadastrarCliente(cliente);
-//
-//        Mockito.verify(clienteRepository, Mockito.times(1)).save(clienteEntity);
-//    }
+    @Test
+    void buscarPacientePorCpf_DeveRetornarPacienteComSucesso() {
+        when(pacienteRepository.findByCpf("12345678901")).thenReturn(Optional.of(pacienteEntityJoao));
+
+        Optional<Paciente> pacienteRetornado = pacienteJpaGateway.buscarPacientePorCpf("12345678901");
+
+        assertTrue(pacienteRetornado.isPresent());
+        assertEquals("12345678901", pacienteRetornado.get().getCpf());
+        assertEquals("João da Silva", pacienteRetornado.get().getNome());
+    }
 
     @Test
-    void deveBuscarClientePorNome() {
+    void buscarPacientePorCpf_DeveRetornarOptionalVazio_QuandoPacienteNaoEncontrado() {
+        Optional<Paciente> pacienteRetornado = pacienteJpaGateway.buscarPacientePorCpf("CPFInexistente");
+        assertFalse(pacienteRetornado.isPresent());
+        when(pacienteRepository.findByCpf("CPFInexistente")).thenReturn(Optional.empty());
+    }
+
+    @Test
+    void deveBuscarPacientePorNome() {
         String nome = "Anderson Rodrigues";
 
-        List<ClienteEntity> clientesEsperados = Arrays.asList(new ClienteEntity(
-                "19276445854",
+        List<PacienteEntity> pacientesEsperados = Arrays.asList(new PacienteEntity(
+                "12345678901",
                 "Anderson Rodrigues",
+                "47",
+                "M",
+                "São Paulo",
                 "Rua Aura",
-                "09981400"
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
         ));
 
-        Mockito.when(clienteRepository.findByNome(nome)).thenReturn(clientesEsperados);
+        Mockito.when(pacienteRepository.findByNome(nome)).thenReturn(pacientesEsperados);
 
-        List<Cliente> clientesRetornados = clienteJpaGateway.buscarClientePorNome(nome);
+        List<Paciente> pacientesRetornados = pacienteJpaGateway.buscarPacientePorNome(nome);
 
-        assertEquals(clientesEsperados.get(0).getCpf(), clientesRetornados.get(0).getCpf());
-        assertEquals(clientesEsperados.get(0).getNome(), clientesRetornados.get(0).getNome());
-        assertEquals(clientesEsperados.get(0).getEndereco(), clientesRetornados.get(0).getEndereco());
-        assertEquals(clientesEsperados.get(0).getCep(), clientesRetornados.get(0).getCep());
-        Mockito.verify(clienteRepository, Mockito.times(1)).findByNome(nome);
+        assertEquals(pacientesEsperados.get(0).getCpf(), pacientesRetornados.get(0).getCpf());
+        assertEquals(pacientesEsperados.get(0).getNome(), pacientesRetornados.get(0).getNome());
+        assertEquals(pacientesEsperados.get(0).getIdade(), pacientesRetornados.get(0).getIdade());
+        assertEquals(pacientesEsperados.get(0).getSexo(), pacientesRetornados.get(0).getSexo());
+        assertEquals(pacientesEsperados.get(0).getCidade(), pacientesRetornados.get(0).getCidade());
+        assertEquals(pacientesEsperados.get(0).getEndereco(), pacientesRetornados.get(0).getEndereco());
+        assertEquals(pacientesEsperados.get(0).getCep(), pacientesRetornados.get(0).getCep());
+        assertEquals(pacientesEsperados.get(0).getEmail(), pacientesRetornados.get(0).getEmail());
+        assertEquals(pacientesEsperados.get(0).getTelefone(), pacientesRetornados.get(0).getTelefone());
+        Mockito.verify(pacienteRepository, Mockito.times(1)).findByNome(nome);
     }
 
     @Test
-    void deveBuscarClientePorNome_LancarClienteNaoEncontradoException_QuandoClienteNaoForEncontrado() {
+    void deveBuscarPacientePorNome_LancarPacienteNaoEncontradoException_QuandoPacienteNaoForEncontrado() {
         String nome = "Anderson Rodrigues";
 
-        Mockito.when(clienteRepository.findByNome(nome)).thenReturn(Collections.emptyList());
+        Mockito.when(pacienteRepository.findByNome(nome)).thenReturn(Collections.emptyList());
 
-        assertThrows(ClienteNaoEncontradoException.class, () -> {
-            clienteJpaGateway.buscarClientePorNome(nome);
+        assertThrows(PacienteNaoEncontradoException.class, () -> {
+            pacienteJpaGateway.buscarPacientePorNome(nome);
         });
-        Mockito.verify(clienteRepository, Mockito.times(1)).findByNome(nome);
+        Mockito.verify(pacienteRepository, Mockito.times(1)).findByNome(nome);
     }
-
     @Test
-    void deveBuscarClientePorCep() {
-        String cep = "09981400";
+    void deveAtualizarPaciente() {
+        String cpf = "12345678901";
 
-        List<ClienteEntity> clientesEsperados = Arrays.asList(new ClienteEntity(
-                "19276445854",
+        Paciente pacienteAtualizado = new Paciente(
+                cpf,
                 "Anderson Rodrigues",
+                "47",
+                "M",
+                "São Paulo",
                 "Rua Aura",
-                "09981400"
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
+        );
+
+        Optional<PacienteEntity> pacienteAntigoRetornado = Optional.of(new PacienteEntity(
+                "12345678901",
+                "Anderson Rodrigues",
+                "47",
+                "M",
+                "São Paulo",
+                "Rua Aura",
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
         ));
 
-        Mockito.when(clienteRepository.findByCep(cep)).thenReturn(clientesEsperados);
-
-        List<Cliente> clientesRetornados = clienteJpaGateway.buscarClientePorCep(cep);
-
-        assertEquals(clientesEsperados.get(0).getCpf(), clientesRetornados.get(0).getCpf());
-        assertEquals(clientesEsperados.get(0).getNome(), clientesRetornados.get(0).getNome());
-        assertEquals(clientesEsperados.get(0).getEndereco(), clientesRetornados.get(0).getEndereco());
-        assertEquals(clientesEsperados.get(0).getCep(), clientesRetornados.get(0).getCep());
-        Mockito.verify(clienteRepository, Mockito.times(1)).findByCep(cep);
-    }
-
-    @Test
-    void deveBuscarClientePorCep_LancarClienteNaoEncontradoException_QuandoClienteNaoForEncontrado() {
-        String cep = "09981400";
-
-        Mockito.when(clienteRepository.findByCep(cep)).thenReturn(Collections.emptyList());
-
-        assertThrows(ClienteNaoEncontradoException.class, () -> {
-            clienteJpaGateway.buscarClientePorCep(cep);
-        });
-        Mockito.verify(clienteRepository, Mockito.times(1)).findByCep(cep);
-    }
-
-//    @Test
-//    void deveAtualizarCliente() {
-//        String cpf = "19276445854";
-//
-//        Cliente clienteAtualizado = new Cliente(
-//                cpf,
-//                "Anderson Rodrigues 2",
-//                "Rua Aura 2",
-//                "09981401"
-//        );
-//
-//        Optional<ClienteEntity> clienteAntigoRetornado = Optional.of(new ClienteEntity(
-//                "19276445854",
-//                "Anderson Rodrigues",
-//                "Rua Aura",
-//                "09981400"
-//        ));
-//
-//        ClienteEntity clienteAtualizadoSalvo = new ClienteEntity(
-//                cpf,
-//                "Anderson Rodrigues 2",
-//                "Rua Aura 2",
-//                "09981401"
-//        );
-//
-//        Mockito.when(clienteRepository.findByCpf(cpf)).thenReturn(clienteAntigoRetornado);
-//        Mockito.when(clienteRepository.save(clienteAtualizadoSalvo)).thenReturn(clienteAtualizadoSalvo);
-//
-//        Optional<Cliente> clienteRetornado = clienteJpaGateway.atualizarCliente(cpf, clienteAtualizado);
-//
-//        assertTrue(clienteRetornado.isPresent());
-//        assertEquals(clienteAtualizado.getCpf(), clienteRetornado.get().getCpf());
-//        assertEquals(clienteAtualizado.getNome(), clienteRetornado.get().getNome());
-//        assertEquals(clienteAtualizado.getEndereco(), clienteRetornado.get().getEndereco());
-//        assertEquals(clienteAtualizado.getCep(), clienteRetornado.get().getCep());
-//        Mockito.verify(clienteRepository, Mockito.times(1)).findByCpf(cpf);
-//    }
-
-    @Test
-    void deveAtualizarCliente() {
-        String cpf = "19276445854";
-
-        Cliente clienteAtualizado = new Cliente(
+        PacienteEntity pacienteAtualizadoSalvo = new PacienteEntity(
                 cpf,
-                "Anderson Rodrigues 2",
-                "Rua Aura 2",
-                "09981401"
-        );
-
-        Optional<ClienteEntity> clienteAntigoRetornado = Optional.of(new ClienteEntity(
-                "19276445854",
                 "Anderson Rodrigues",
+                "47",
+                "M",
+                "São Paulo",
                 "Rua Aura",
-                "09981400"
-        ));
-
-        ClienteEntity clienteAtualizadoSalvo = new ClienteEntity(
-                cpf,
-                "Anderson Rodrigues 2",
-                "Rua Aura 2",
-                "09981401"
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
         );
 
-        Mockito.when(clienteRepository.findByCpf(cpf)).thenReturn(clienteAntigoRetornado);
-        Mockito.when(clienteRepository.save(any(ClienteEntity.class))).thenReturn(clienteAtualizadoSalvo);
+        Mockito.when(pacienteRepository.findByCpf(cpf)).thenReturn(pacienteAntigoRetornado);
+        Mockito.when(pacienteRepository.save(any(PacienteEntity.class))).thenReturn(pacienteAtualizadoSalvo);
 
-        Optional<Cliente> clienteRetornado = clienteJpaGateway.atualizarCliente(cpf, clienteAtualizado);
+        Optional<Paciente> pacienteRetornado = pacienteJpaGateway.atualizarPaciente(cpf, pacienteAtualizado);
 
-        assertTrue(clienteRetornado.isPresent());
-        assertEquals(clienteAtualizado.getCpf(), clienteRetornado.get().getCpf());
-        assertEquals(clienteAtualizado.getNome(), clienteRetornado.get().getNome());
-        assertEquals(clienteAtualizado.getEndereco(), clienteRetornado.get().getEndereco());
-        assertEquals(clienteAtualizado.getCep(), clienteRetornado.get().getCep());
+        assertTrue(pacienteRetornado.isPresent());
+        assertEquals(pacienteAtualizado.getCpf(), pacienteRetornado.get().getCpf());
+        assertEquals(pacienteAtualizado.getNome(), pacienteRetornado.get().getNome());
+        assertEquals(pacienteAtualizado.getIdade(), pacienteRetornado.get().getIdade());
+        assertEquals(pacienteAtualizado.getSexo(), pacienteRetornado.get().getSexo());
+        assertEquals(pacienteAtualizado.getCidade(), pacienteRetornado.get().getCidade());
+        assertEquals(pacienteAtualizado.getEndereco(), pacienteRetornado.get().getEndereco());
+        assertEquals(pacienteAtualizado.getCep(), pacienteRetornado.get().getCep());
+        assertEquals(pacienteAtualizado.getEmail(), pacienteRetornado.get().getEmail());
+        assertEquals(pacienteAtualizado.getTelefone(), pacienteRetornado.get().getTelefone());
 
-        // Verifique se o método save foi chamado com o cliente atualizado
-        verify(clienteRepository, times(1)).save(any(ClienteEntity.class));
+        verify(pacienteRepository, times(1)).save(any(PacienteEntity.class));
     }
 
     @Test
-    void deveAtualizarCliente_LancarClienteNaoEncontradoException_QuandoClienteNaoForEncontrado() {
+    void deveAtualizarPaciente_LancarPacienteNaoEncontradoException_QuandoPacienteNaoForEncontrado() {
         String cpf = "19276445854";
 
-        Cliente clienteAtualizado = new Cliente(
+        Paciente pacienteAtualizado = new Paciente(
                 cpf,
-                "Anderson Rodrigues 2",
-                "Rua Aura 2",
-                "09981401"
+                "Anderson Rodrigues",
+                "47",
+                "M",
+                "São Paulo",
+                "Rua Aura",
+                "09981400",
+                "nand.rodrigues@gmail.com",
+                "11 985937410"
         );
 
-        Mockito.when(clienteRepository.findByCpf(cpf)).thenReturn(Optional.empty());
+        Mockito.when(pacienteRepository.findByCpf(cpf)).thenReturn(Optional.empty());
 
-        assertThrows(ClienteNaoEncontradoException.class, () -> {
-            clienteJpaGateway.atualizarCliente(cpf, clienteAtualizado);
+        assertThrows(PacienteNaoEncontradoException.class, () -> {
+            pacienteJpaGateway.atualizarPaciente(cpf, pacienteAtualizado);
         });
-        Mockito.verify(clienteRepository, Mockito.times(1)).findByCpf(cpf);
+        Mockito.verify(pacienteRepository, Mockito.times(1)).findByCpf(cpf);
     }
 
     @Test
-    void deveRemoverCliente() {
-        String cpf = "19276445854";
+    void deveRemoverPaciente() {
+        String cpf = "12345678901";
 
-        clienteJpaGateway.removerCliente(cpf);
+        pacienteJpaGateway.removerPaciente(cpf);
 
-        Mockito.verify(clienteRepository, Mockito.times(1)).deleteByCpf(cpf);
+        Mockito.verify(pacienteRepository, Mockito.times(1)).deleteByCpf(cpf);
     }
 
     @Test
     void criar_DeveLancarErroAoAcessarRepositorioException_QuandoOcorreErro() {
-        // Arrange
-        Cliente cliente = new Cliente();
 
-        when(clienteRepository.save(any(ClienteEntity.class))).thenThrow(new RuntimeException("Erro ao salvar"));
+        Paciente paciente = new Paciente();
 
-        // Act & Assert
-        assertThrows(ErroAcessarRepositorioException.class, () -> clienteJpaGateway.cadastrarCliente(cliente));
-        verify(clienteRepository, times(1)).save(any(ClienteEntity.class));
+        when(pacienteRepository.save(any(PacienteEntity.class))).thenThrow(new RuntimeException("Erro ao salvar"));
+
+        assertThrows(ErroAcessarRepositorioException.class, () -> pacienteJpaGateway.cadastrarPaciente(paciente));
+        verify(pacienteRepository, times(1)).save(any(PacienteEntity.class));
     }
 
 }

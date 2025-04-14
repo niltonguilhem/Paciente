@@ -1,18 +1,21 @@
-package br.com.clientes.cadastro.controller;
+package br.com.pacientes.controller;
 
-import br.com.clientes.cadastro.controller.json.ClienteJson;
-import br.com.clientes.cadastro.domain.Cliente;
-import br.com.clientes.cadastro.usecase.GerenciarClienteUsecase;
+import br.com.pacientes.cadastro.PacienteServiceApplication;
+import br.com.pacientes.cadastro.controller.json.PacienteJson;
+import br.com.pacientes.cadastro.domain.Paciente;
+import br.com.pacientes.cadastro.usecase.GerenciarPacienteUsecase;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -20,8 +23,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ClienteController.class)
-class ClienteControllerTest {
+
+@SpringBootTest(classes = PacienteServiceApplication.class)
+@AutoConfigureMockMvc
+class PacienteControllerTest {
 
    @Autowired
    private MockMvc mockMvc;
@@ -30,64 +35,117 @@ class ClienteControllerTest {
    private ObjectMapper objectMapper;
 
    @MockBean
-   private GerenciarClienteUsecase gerenciarClienteUsecase;
+   private GerenciarPacienteUsecase gerenciarPacienteUsecase;
+
+   private PacienteJson pacienteJson;
+   private Paciente paciente;
+
+   @BeforeEach
+   void setUp() {
+      pacienteJson = new PacienteJson(
+              "12345678901",
+              "João da Silva",
+              "30",
+              "M",
+              "São Paulo",
+              "Rua A, 123",
+              "12345-678",
+              "joao@email.com",
+              "11999999999"
+      );
+
+      paciente = new Paciente(
+              "12345678901",
+              "João da Silva",
+              "30",
+              "M",
+              "São Paulo",
+              "Rua A, 123",
+              "12345-678",
+              "joao@email.com",
+              "11999999999"
+      );
+   }
 
    @Test
-   void deveCadastrarCliente() throws Exception {
-      ClienteJson clienteJson = new ClienteJson("19276445854", "Anderson Rodrigues", "Rua Aura", "09981-400");
-
-      mockMvc.perform(post("/api/v1/clientes")
+   void deveCadastrarPaciente() throws Exception {
+      mockMvc.perform(post("/api/v1/pacientes")
                       .contentType(MediaType.APPLICATION_JSON)
-                      .content(objectMapper.writeValueAsString(clienteJson)))
+                      .content(objectMapper.writeValueAsString(pacienteJson)))
               .andExpect(status().isOk())
-              .andExpect(content().string("Cliente cadastrado com sucesso!"));
+              .andExpect(content().string("Paciente cadastrado com sucesso!"));
 
-      Mockito.verify(gerenciarClienteUsecase, Mockito.times(1)).cadastrarCliente(any(Cliente.class));
+      Mockito.verify(gerenciarPacienteUsecase, Mockito.times(1)).cadastrarPaciente(any(Paciente.class));
    }
 
    @Test
-   void deveBuscarClientePorNome() throws Exception {
-      String nome = "Anderson Rodrigues";
+   void deveBuscarPacientePorCpf() throws Exception {
+      Mockito.when(gerenciarPacienteUsecase.buscarPacientePorCpf("12345678901")).thenReturn(Optional.of(paciente));
 
-      List<Cliente> clientesEsperados = List.of(new Cliente("19276445854", nome, "Rua Aura", "09981-400"));
-
-      Mockito.when(gerenciarClienteUsecase.buscarClientePorNome(nome)).thenReturn(clientesEsperados);
-
-      mockMvc.perform(get("/api/v1/clientes/nome/{nome}", nome))
+      mockMvc.perform(get("/api/v1/pacientes/12345678901"))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$[0].cpf").value("19276445854"));
+              .andExpect(jsonPath("$.cpf").value("12345678901"))
+              .andExpect(jsonPath("$.nome").value("João da Silva"));
 
-      Mockito.verify(gerenciarClienteUsecase).buscarClientePorNome(nome);
+      Mockito.verify(gerenciarPacienteUsecase).buscarPacientePorCpf("12345678901");
    }
 
    @Test
-   void deveAtualizarCliente() throws Exception {
-      String cpf = "19276445854";
-      Cliente clienteAtualizado = new Cliente(cpf, "Anderson Rodrigues 2", "Rua Aura 2", "09981-401");
+   void deveBuscarPacientePorCpf_NotFound() throws Exception {
+      Mockito.when(gerenciarPacienteUsecase.buscarPacientePorCpf("99999999999")).thenReturn(Optional.empty());
 
-      ClienteJson clienteJson = new ClienteJson(cpf, "Anderson Rodrigues 2", "Rua Aura 2", "09981-401");
+      mockMvc.perform(get("/api/v1/pacientes/99999999999"))
+              .andExpect(status().isNotFound());
 
-      // Corrigindo o mock para retornar um Optional
-      Mockito.when(gerenciarClienteUsecase.atualizarCliente(eq(cpf), any(Cliente.class)))
-              .thenReturn(Optional.of(clienteAtualizado));
+      Mockito.verify(gerenciarPacienteUsecase).buscarPacientePorCpf("99999999999");
+   }
 
-      mockMvc.perform(put("/api/v1/clientes/{cpf}", cpf)
+   @Test
+   void deveBuscarPacientePorNome() throws Exception {
+      Mockito.when(gerenciarPacienteUsecase.buscarPacientePorNome("João da Silva")).thenReturn(Collections.singletonList(paciente));
+
+      mockMvc.perform(get("/api/v1/pacientes/nome/João da Silva"))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$[0].cpf").value("12345678901"))
+              .andExpect(jsonPath("$[0].nome").value("João da Silva"));
+
+      Mockito.verify(gerenciarPacienteUsecase).buscarPacientePorNome("João da Silva");
+   }
+
+   @Test
+   void deveAtualizarPaciente() throws Exception {
+      Mockito.when(gerenciarPacienteUsecase.atualizarPaciente(eq("12345678901"), any(Paciente.class)))
+              .thenReturn(Optional.of(paciente));
+
+      mockMvc.perform(put("/api/v1/pacientes/12345678901")
                       .contentType(MediaType.APPLICATION_JSON)
-                      .content(objectMapper.writeValueAsString(clienteJson)))
-              .andExpect(status().isOk()) // Espera código 200
-              .andExpect(jsonPath("$.cpf").value(cpf))
-              .andExpect(jsonPath("$.nome").value("Anderson Rodrigues 2"));
+                      .content(objectMapper.writeValueAsString(pacienteJson)))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.cpf").value("12345678901"))
+              .andExpect(jsonPath("$.nome").value("João da Silva"));
 
-      Mockito.verify(gerenciarClienteUsecase).atualizarCliente(eq(cpf), any(Cliente.class));
+      Mockito.verify(gerenciarPacienteUsecase).atualizarPaciente(eq("12345678901"), any(Paciente.class));
    }
 
    @Test
-   void deveRemoverCliente() throws Exception {
-      String cpf = "19276445854";
+   void deveAtualizarPaciente_NotFound() throws Exception {
+      Mockito.when(gerenciarPacienteUsecase.atualizarPaciente(eq("99999999999"), any(Paciente.class)))
+              .thenReturn(Optional.empty());
 
-      mockMvc.perform(delete("/api/v1/clientes/{cpf}", cpf))
+      mockMvc.perform(put("/api/v1/pacientes/99999999999")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(objectMapper.writeValueAsString(pacienteJson)))
+              .andExpect(status().isNotFound());
+
+      Mockito.verify(gerenciarPacienteUsecase).atualizarPaciente(eq("99999999999"), any(Paciente.class));
+   }
+
+   @Test
+   void deveRemoverPaciente() throws Exception {
+      mockMvc.perform(delete("/api/v1/pacientes/12345678901"))
               .andExpect(status().isNoContent());
 
-      Mockito.verify(gerenciarClienteUsecase).removerCliente(cpf);
+      Mockito.verify(gerenciarPacienteUsecase).removerPaciente("12345678901");
    }
+
 }

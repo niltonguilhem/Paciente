@@ -1,10 +1,16 @@
 package br.com.pacientes.cadastro.exception;
 
-import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-@Getter
-public class ErroAcessarRepositorioException extends SystemBaseException {
-	private final String code = "paciente.erroAcessarRepositorio";
-	private final String message = "Erro ao acessar repositório.";
-	private final Integer httpStatus = 500;
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class ErroAcessarRepositorioException extends RuntimeException {
+
+	public ErroAcessarRepositorioException() {
+		super();
+	}
+
+	public ErroAcessarRepositorioException(String message) {
+		super(message);
+	}
 }

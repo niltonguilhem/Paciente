@@ -1,140 +1,149 @@
-package br.com.clientes.cadastro.usecase;
+package br.com.pacientes.usecase;
 
-import br.com.clientes.cadastro.domain.Cliente;
-import br.com.clientes.cadastro.gateway.ClienteGateway;
+import br.com.pacientes.cadastro.domain.Paciente;
+import br.com.pacientes.cadastro.gateway.PacienteGateway;
+import br.com.pacientes.cadastro.usecase.GerenciarPacienteUsecase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
- class GerenciarClienteUsecaseTest {
+class GerenciarPacienteUsecaseTest {
+
     @InjectMocks
-    private GerenciarClienteUsecase gerenciarClienteUsecase;
+    private GerenciarPacienteUsecase gerenciarPacienteUsecase;
 
     @Mock
-    private ClienteGateway clienteGateway;
+    private PacienteGateway pacienteGateway;
+
+    private Paciente paciente;
 
     @BeforeEach
-    void setup() { MockitoAnnotations.openMocks(this); }
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        paciente = criarPaciente();
+    }
+
+    private Paciente criarPaciente() {
+        return new Paciente(
+                "12345678901",
+                "João da Silva",
+                "30",
+                "M",
+                "São Paulo",
+                "Rua A, 123",
+                "12345-678",
+                "joao@email.com",
+                "11999999999"
+        );
+    }
 
     @Test
-     void deveCadastrarCliente() {
-        Cliente cliente = new Cliente(
-                "19276445854",
-                "Anderson Rodrigues",
-                "Rua Aura",
-                "09981400"
+    void deveCadastrarPaciente_QuandoPacienteValido() {
+        gerenciarPacienteUsecase.cadastrarPaciente(paciente);
+        verify(pacienteGateway, times(1)).cadastrarPaciente(paciente);
+    }
+
+    @Test
+    void deveBuscarPacientePorNome_QuandoNomeEncontrado() {
+        String nome = "João da Silva";
+        List<Paciente> pacientesEsperados = Arrays.asList(paciente);
+
+        when(pacienteGateway.buscarPacientePorNome(nome)).thenReturn(pacientesEsperados);
+
+        List<Paciente> pacientesRetornados = gerenciarPacienteUsecase.buscarPacientePorNome(nome);
+
+        assertAll(
+                "Verifica os dados do paciente retornado",
+                () -> assertEquals(1, pacientesRetornados.size(), "Deve retornar um paciente"),
+                () -> assertEquals(paciente.getCpf(), pacientesRetornados.get(0).getCpf(), "CPF deve ser igual"),
+                () -> assertEquals(paciente.getNome(), pacientesRetornados.get(0).getNome(), "Nome deve ser igual"),
+                () -> assertEquals(paciente.getIdade(), pacientesRetornados.get(0).getIdade(), "Idade deve ser igual"),
+                () -> assertEquals(paciente.getSexo(), pacientesRetornados.get(0).getSexo(), "Sexo deve ser igual"),
+                () -> assertEquals(paciente.getCidade(), pacientesRetornados.get(0).getCidade(),"Cidade deve ser igual"),
+                () -> assertEquals(paciente.getEndereco(), pacientesRetornados.get(0).getEndereco(), "Endereço deve ser igual"),
+                () -> assertEquals(paciente.getCep(), pacientesRetornados.get(0).getCep(), "CEP deve ser igual"),
+                () -> assertEquals(paciente.getEmail(), pacientesRetornados.get(0).getEmail(), "Email deve ser igual"),
+                () -> assertEquals(paciente.getTelefone(), pacientesRetornados.get(0).getTelefone(), "Telefone deve ser igual")
         );
 
-        gerenciarClienteUsecase.cadastrarCliente(cliente);
-
-        Mockito.verify(clienteGateway, Mockito.times(1)).cadastrarCliente(cliente);
+        verify(pacienteGateway, times(1)).buscarPacientePorNome(nome);
     }
 
     @Test
-     void deveBuscarClientePorNome() {
-        String nome = "Anderson Rodrigues";
+    void deveBuscarPacientePorCpf_QuandoCpfEncontrado() {
+        String cpf = "12345678901";
+        when(pacienteGateway.buscarPacientePorCpf(cpf)).thenReturn(Optional.of(paciente));
 
-        List<Cliente> clientesEsperados = Arrays.asList(new Cliente(
-                "19276445854",
-                "Anderson Rodrigues",
-                "Rua Aura",
-                "09981400"
-        ));
+        Optional<Paciente> pacienteRetornado = gerenciarPacienteUsecase.buscarPacientePorCpf(cpf);
 
-        Mockito.when(clienteGateway.buscarClientePorNome(nome)).thenReturn(clientesEsperados);
+        assertTrue(pacienteRetornado.isPresent(), "Paciente deve estar presente");
 
-        List<Cliente> clientesRetornados = gerenciarClienteUsecase.buscarClientePorNome(nome);
-
-        assertEquals(clientesEsperados.get(0).getCpf(), clientesRetornados.get(0).getCpf());
-        assertEquals(clientesEsperados.get(0).getNome(), clientesRetornados.get(0).getNome());
-        assertEquals(clientesEsperados.get(0).getEndereco(), clientesRetornados.get(0).getEndereco());
-        assertEquals(clientesEsperados.get(0).getCep(), clientesRetornados.get(0).getCep());
-        Mockito.verify(clienteGateway, Mockito.times(1)).buscarClientePorNome(nome);
-    }
-
-    @Test
-     void deveBuscarClientePorCpf() {
-        String cpf = "19276445854";
-
-        List<Cliente> clientesEsperados = Arrays.asList(new Cliente(
-                "19276445854",
-                "Anderson Rodrigues",
-                "Rua Aura",
-                "09981400"
-        ));
-
-        Mockito.when(clienteGateway.buscarClientePorCpf(cpf)).thenReturn(clientesEsperados);
-
-        List<Cliente> clientesRetornados = gerenciarClienteUsecase.buscarClientePorCpf(cpf);
-
-        assertEquals(clientesEsperados.get(0).getCpf(), clientesRetornados.get(0).getCpf());
-        assertEquals(clientesEsperados.get(0).getNome(), clientesRetornados.get(0).getNome());
-        assertEquals(clientesEsperados.get(0).getEndereco(), clientesRetornados.get(0).getEndereco());
-        assertEquals(clientesEsperados.get(0).getCep(), clientesRetornados.get(0).getCep());
-        Mockito.verify(clienteGateway, Mockito.times(1)).buscarClientePorCpf(cpf);
-    }
-
-    @Test
-     void deveBuscarClientePorCep() {
-        String cep = "09981400";
-
-        List<Cliente> clientesEsperados = Arrays.asList(new Cliente(
-                "19276445854",
-                "Anderson Rodrigues",
-                "Rua Aura",
-                "09981400"
-        ));
-
-        Mockito.when(clienteGateway.buscarClientePorCep(cep)).thenReturn(clientesEsperados);
-
-        List<Cliente> clientesRetornados = gerenciarClienteUsecase.buscarClientePorCep(cep);
-
-        assertEquals(clientesEsperados.get(0).getCpf(), clientesRetornados.get(0).getCpf());
-        assertEquals(clientesEsperados.get(0).getNome(), clientesRetornados.get(0).getNome());
-        assertEquals(clientesEsperados.get(0).getEndereco(), clientesRetornados.get(0).getEndereco());
-        assertEquals(clientesEsperados.get(0).getCep(), clientesRetornados.get(0).getCep());
-        Mockito.verify(clienteGateway, Mockito.times(1)).buscarClientePorCep(cep);
-    }
-
-    @Test
-     void deveAtualizarCliente() {
-        String cpf = "19276445854";
-
-        Cliente clienteAtualizado = new Cliente(
-                cpf,
-                "Anderson Rodrigues 2",
-                "Rua Aura 2",
-                "09981401"
+        assertAll(
+                "Verifica os dados do paciente retornado",
+                () -> assertEquals(paciente.getCpf(), pacienteRetornado.get().getCpf(), "CPF deve ser igual"),
+                () -> assertEquals(paciente.getNome(), pacienteRetornado.get().getNome(), "Nome deve ser igual"),
+                () -> assertEquals(paciente.getIdade(), pacienteRetornado.get().getIdade(), "Idade deve ser igual"),
+                () -> assertEquals(paciente.getSexo(), pacienteRetornado.get().getSexo(), "Sexo deve ser igual"),
+                () -> assertEquals(paciente.getCidade(), pacienteRetornado.get().getCidade(),"Cidade deve ser igual"),
+                () -> assertEquals(paciente.getEndereco(), pacienteRetornado.get().getEndereco(), "Endereço deve ser igual"),
+                () -> assertEquals(paciente.getCep(), pacienteRetornado.get().getCep(), "CEP deve ser igual"),
+                () -> assertEquals(paciente.getEmail(), pacienteRetornado.get().getEmail(), "Email deve ser igual"),
+                () -> assertEquals(paciente.getTelefone(), pacienteRetornado.get().getTelefone(), "Telefone deve ser igual")
         );
 
-        Mockito.when(clienteGateway.atualizarCliente(cpf, clienteAtualizado)).thenReturn(Optional.of(clienteAtualizado));
-
-        Optional<Cliente> clienteRetornado = gerenciarClienteUsecase.atualizarCliente(cpf, clienteAtualizado);
-
-        assertTrue(clienteRetornado.isPresent());
-        assertEquals(clienteAtualizado.getCpf(), clienteRetornado.get().getCpf());
-        assertEquals(clienteAtualizado.getNome(), clienteRetornado.get().getNome());
-        assertEquals(clienteAtualizado.getEndereco(), clienteRetornado.get().getEndereco());
-        assertEquals(clienteAtualizado.getCep(), clienteRetornado.get().getCep());
-        Mockito.verify(clienteGateway, Mockito.times(1)).atualizarCliente(cpf, clienteAtualizado);
+        verify(pacienteGateway, times(1)).buscarPacientePorCpf(cpf);
     }
 
     @Test
-     void deveRemoverCliente() {
-        String cpf = "19276445854";
+    void deveAtualizarPaciente_QuandoPacienteEncontrado() {
+        String cpf = "12345678901";
+        when(pacienteGateway.atualizarPaciente(cpf, paciente)).thenReturn(Optional.of(paciente));
 
-        gerenciarClienteUsecase.removerCliente(cpf);
+        Optional<Paciente> pacienteRetornado = gerenciarPacienteUsecase.atualizarPaciente(cpf, paciente);
 
-        Mockito.verify(clienteGateway, Mockito.times(1)).removerCliente(cpf);
+        assertTrue(pacienteRetornado.isPresent(), "Paciente deve estar presente");
+
+        assertAll(
+                "Verifica os dados do paciente retornado",
+                () -> assertEquals(paciente.getCpf(), pacienteRetornado.get().getCpf(), "CPF deve ser igual"),
+                () -> assertEquals(paciente.getNome(), pacienteRetornado.get().getNome(), "Nome deve ser igual"),
+                () -> assertEquals(paciente.getIdade(), pacienteRetornado.get().getIdade(), "Idade deve ser igual"),
+                () -> assertEquals(paciente.getSexo(), pacienteRetornado.get().getSexo(), "Sexo deve ser igual"),
+                () -> assertEquals(paciente.getCidade(), pacienteRetornado.get().getCidade(),"Cidade deve ser igual"),
+                () -> assertEquals(paciente.getEndereco(), pacienteRetornado.get().getEndereco(), "Endereço deve ser igual"),
+                () -> assertEquals(paciente.getCep(), pacienteRetornado.get().getCep(), "CEP deve ser igual"),
+                () -> assertEquals(paciente.getEmail(), pacienteRetornado.get().getEmail(), "Email deve ser igual"),
+                () -> assertEquals(paciente.getTelefone(), pacienteRetornado.get().getTelefone(), "Telefone deve ser igual")
+        );
+
+        verify(pacienteGateway, times(1)).atualizarPaciente(cpf, paciente);
+    }
+
+
+    @Test
+    void deveRemoverPaciente_QuandoCpfValido() {
+        String cpf = "12345678901";
+        gerenciarPacienteUsecase.removerPaciente(cpf);
+        verify(pacienteGateway, times(1)).removerPaciente(cpf);
+    }
+
+    @Test
+    void deveBuscarPacientePorCpf_QuandoCpfNaoEncontrado() {
+        String cpf = "99999999999";
+        when(pacienteGateway.buscarPacientePorCpf(cpf)).thenReturn(Optional.empty());
+
+        Optional<Paciente> pacienteRetornado = gerenciarPacienteUsecase.buscarPacientePorCpf(cpf);
+
+        assertFalse(pacienteRetornado.isPresent(), "Paciente não deve estar presente");
+        verify(pacienteGateway, times(1)).buscarPacientePorCpf(cpf);
     }
 }

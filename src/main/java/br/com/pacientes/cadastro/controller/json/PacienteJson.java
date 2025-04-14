@@ -1,6 +1,5 @@
 package br.com.pacientes.cadastro.controller.json;
 
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -20,6 +19,9 @@ public class PacienteJson {
 
 	@NotBlank(message = "Informe o sexo, campo obrigatório")
 	private String sexo;
+
+	@NotBlank(message = "Cidade é Obrigatório")
+	private String cidade;
 
 	@NotBlank(message = "Endereço é obrigatório")
 	private String endereco;

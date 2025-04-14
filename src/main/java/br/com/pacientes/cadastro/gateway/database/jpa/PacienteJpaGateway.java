@@ -77,19 +77,21 @@ public class PacienteJpaGateway implements PacienteGateway {
 				pacienteEntity.getNome(),
 				pacienteEntity.getIdade(),
 				pacienteEntity.getSexo(),
+				pacienteEntity.getCidade(),
 				pacienteEntity.getEndereco(),
 				pacienteEntity.getCep(),
 				pacienteEntity.getEmail(),
 				pacienteEntity.getTelefone()
 		);
 	}
-	
+
 	private PacienteEntity mapToEntity(Paciente paciente) {
 		return new PacienteEntity(
 				paciente.getCpf(),
 				paciente.getNome(),
 				paciente.getIdade(),
 				paciente.getSexo(),
+				paciente.getCidade(),
 				paciente.getEndereco(),
 				paciente.getCep(),
 				paciente.getEmail(),

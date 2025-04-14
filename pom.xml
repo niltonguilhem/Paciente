@@ -64,7 +64,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -98,8 +97,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-suite</artifactId>
-			<version>1.9.3</version>
+			<artifactId>junit-platform-suite-api</artifactId>
+			<version>1.11.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -111,13 +110,13 @@
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-java</artifactId>
-			<version>7.13.0</version>
+			<version>7.21.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-junit-platform-engine</artifactId>
-			<version>7.13.0</version>
+			<version>7.21.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -154,20 +153,19 @@
 				</configuration>
 			</plugin>
 
-			<!-- Jacoco plugin - corrigindo a duplicação do execution.id -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.9</version>
 				<executions>
 					<execution>
-						<id>prepare-agent</id> <!-- Único id para o primeiro objetivo -->
+						<id>prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
 					<execution>
-						<id>report</id> <!-- Id único para o segundo objetivo -->
+						<id>report</id>
 						<goals>
 							<goal>report</goal>
 						</goals>

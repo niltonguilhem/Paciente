@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(classes = PacienteServiceApplication.class) // Especifica a classe de configuração
+@SpringBootTest(classes = PacienteServiceApplication.class)
 class PacienteApplicationTest {
 
     @Autowired

@@ -1,10 +1,20 @@
 package br.com.pacientes.cadastro.exception;
 
-import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-@Getter
-public class PacienteNaoEncontradoException extends SystemBaseException {
-	private final String code = "pacienteNaoEncontradoException";
-	private final String message = "Paciente não encontrado.";
-	private final Integer httpStatus = 404;
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class PacienteNaoEncontradoException extends RuntimeException {
+
+	public PacienteNaoEncontradoException() {
+		super();
+	}
+
+	public PacienteNaoEncontradoException(String message) {
+		super(message);
+	}
+
+	public int getHttpStatus() {
+		return HttpStatus.NOT_FOUND.value();
+	}
 }
